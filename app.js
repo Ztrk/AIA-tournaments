@@ -87,6 +87,22 @@ app.get('/', async (req, res) => {
     }
 });
 
+app.get('/login', (req, res) => {
+    res.render('login');
+});
+
+app.post('/login', (req, res) => {
+    res.redirect(303, '/login');
+});
+
+app.get('/register', (req, res) => {
+    res.render('register');
+});
+
+app.post('/register', (req, res) => {
+    res.redirect(303, '/register');
+});
+
 app.listen(3000, () => 
     console.log('Server running at http://localhost:3000/')
 );
