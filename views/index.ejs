@@ -1,14 +1,21 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Tournament System</title>
-  </head>
-  <body>
-    <h1>Hello to Tournament System</h1>
-    <% tournaments.forEach((tournament) => { %>
-      <li><%= tournament.name %></li>
-    <% }); %>
-  </body>
-</html>
+<%- include('layoutTop') -%>
+<main class="container">
+  <h1>Hello to Tournament System</h1>
+  <ul class="list-group">
+  <% tournaments.forEach(tournament => { %>
+    <li class="list-group-item"><%= tournament.name %></li>
+  <% }); %>
+  </ul>
+
+  <nav aria-label="Tournaments pages">
+    <ul class="pagination">
+      <%- include('pageItem', { page: pages.previous, linkText: 'Previous' }) %>
+      <% pages.pages.forEach(page => { %>
+        <%- include('pageItem', { page, linkText: page.number }) %>
+      <% }); %>
+      <%- include('pageItem', { page: pages.next, linkText: 'Next' }) %>
+    </ul>
+  </nav>
+
+</main>
+<%- include('layoutBottom') -%>
