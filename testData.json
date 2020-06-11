@@ -1,0 +1,40 @@
+{
+    "tournaments" : [
+        {
+            "name" : "First tournament"
+        },
+        {
+            "name" : "Second tournament"
+        },
+        {
+            "name" : "Other tournament"
+        },
+        {
+            "name" : "Tournament"
+        },
+        {
+            "name" : "Fight"
+        },
+        {
+            "name" : "Boring"
+        },
+        {
+            "name" : "Will be explosions"
+        },
+        {
+            "name" : "Testing"
+        },
+        {
+            "name" : "Still testing"
+        },
+        {
+            "name" : "ASDF"
+        },
+        {
+            "name" : "No idea for names"
+        },
+        {
+            "name" : "It's the last one"
+        }
+    ]
+}

@@ -7,6 +7,8 @@
   </head>
   <body>
     <h1>Hello to Tournament System</h1>
-    <p>There will be some tournaments here in the future</p>
+    <% tournaments.forEach((tournament) => { %>
+      <li><%= tournament.name %></li>
+    <% }); %>
   </body>
 </html>
