@@ -16,8 +16,14 @@ db.once('open', () => console.log('Connected to MongoDB database'));
 
 // Create schema
 const usersSchema = new mongoose.Schema({
-    name: String,
-    email: String,
+    name: {
+        type: String,
+        unique: true // builds unique index
+    },
+    email: {
+        type: String,
+        match: /^.+@.+$/
+    },
     passwordHash: String
 });
 const tournamentSchema = new mongoose.Schema({
@@ -126,14 +132,15 @@ app.post('/login', async (req, res) => {
 });
 
 app.get('/register', (req, res) => {
-    res.render('register');
+    registerError = req.session.registerError || {};
+    req.session.registerError = null;
+    console.log(registerError);
+    res.render('register', { registerError });
 });
 
 app.post('/register', async (req, res) => {
     const bcryptRounds = 12;
     if (req.body.username && req.body.email && req.body.password && req.body.confirmedPassword) {
-        // username does not exist
-        // email in correct format
         if (req.body.password == req.body.confirmedPassword) {
             const passwordHash = await bcrypt.hash(req.body.password, bcryptRounds);
             const user = new User({ 
@@ -141,10 +148,29 @@ app.post('/register', async (req, res) => {
                 email: req.body.email,
                 passwordHash
             });
-            console.log(user);
-            await user.save();
-            res.redirect(303, '/');
-            return;
+            try {
+                await user.save();
+                res.redirect(303, '/');
+                return;
+            }
+            catch (error) {
+                req.session.registerError = {};
+                if (error.code === 11000) {
+                    // username exists
+                    req.session.registerError['username'] = true;
+                }
+                else if (error instanceof mongoose.Error.ValidationError) {
+                    if (error.errors.name instanceof mongoose.Error.ValidatorError) {
+                        req.session.registerError['username'] = true;
+                    }
+                    if (error.errors.email instanceof mongoose.Error.ValidatorError) {
+                        req.session.registerError['email'] = true;
+                    }
+                }
+            }
+        }
+        else {
+            req.session.registerError = { confirmedPassword: true };
         }
     }
     res.redirect(303, '/register');

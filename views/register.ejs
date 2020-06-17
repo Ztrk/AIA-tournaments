@@ -1,22 +1,62 @@
 <%- include('layoutTop') -%>
 <main class="container">
   <form method="POST">
+
     <div class="form-group form-row justify-content-center">
       <label for="usernameInput" class="col-sm-3 col-md-2">Username</label>
-      <input type="text" class="form-control col-sm-9 col-md-6" id="usernameInput" name="username">
+      <input 
+        type="text" 
+        class="form-control col-sm-9 col-md-6
+          <%= registerError.username ? 'is-invalid' : ''%>"
+        id="usernameInput" 
+        name="username" required
+      >
+      <div class="invalid-feedback offset-md-2">
+        Username is not valid
+      </div>
     </div>
+
     <div class="form-group form-row justify-content-center">
       <label for="emailInput" class="col-sm-3 col-md-2">Email</label>
-      <input type="email" class="form-control col-sm-9 col-md-6" id="emailInput" name="email">
+      <input
+        type="email"
+        class="form-control col-sm-9 col-md-6
+          <%= registerError.email ? 'is-invalid' : ''%>"
+        id="emailInput"
+        name="email" required
+      >
+      <div class="invalid-feedback offset-md-2">
+        Email address is not valid
+      </div>
     </div>
+
     <div class="form-group form-row justify-content-center">
       <label for="passwordInput" class="col-sm-3 col-md-2">Password</label>
-      <input type="password" class="form-control col-sm-9 col-md-6" id="passwordInput" name="password">
+      <input
+        type="password"
+        class="form-control col-sm-9 col-md-6
+          <%= registerError.confirmedPassword ? 'is-invalid' : ''%>"
+        id="passwordInput"
+        name="password"
+        required
+      >
     </div>
+
     <div class="form-group form-row justify-content-center">
       <label for="confirmedPasswordInput" class="col-sm-3 col-md-2">Confirm password</label>
-      <input type="password" class="form-control col-sm-9 col-md-6" id="confirmedPasswordInput" name="confirmedPassword">
+      <input
+        type="password"
+        class="form-control col-sm-9 col-md-6
+          <%= registerError.confirmedPassword ? 'is-invalid' : ''%>"
+        id="confirmedPasswordInput"
+        name="confirmedPassword"
+        required
+      >
+      <div class="invalid-feedback offset-md-2">
+        Passwords must match
+      </div>
     </div>
+
     <div class="form-row">
       <button type="submit" class="offset-md-2 btn btn-primary">Register</button>
     </div>
