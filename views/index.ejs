@@ -1,6 +1,5 @@
-<%- include('layoutTop') -%>
+<%- include('layoutTop', { user }) -%>
 <main class="container">
-  <h1>Hello to Tournament System</h1>
   <ul class="list-group">
   <% tournaments.forEach(tournament => { %>
     <li class="list-group-item"><%= tournament.name %></li>

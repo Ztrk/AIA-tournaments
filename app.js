@@ -101,7 +101,7 @@ app.get('/', async (req, res) => {
 
         const tournaments = await Tournament.find().sort({ name: 'asc'})
             .skip((page - 1) * itemsPerPage).limit(itemsPerPage);
-        res.render('index', { tournaments, pages });
+        res.render('index', { tournaments, pages, user: req.session.user });
     }
     catch (error) {
         console.log(error);
@@ -111,7 +111,7 @@ app.get('/', async (req, res) => {
 app.get('/login', (req, res) => {
     const lastLoginFailed = req.session.lastLoginFailed;
     req.session.lastLoginFailed = false;
-    res.render('login', { lastLoginFailed });
+    res.render('login', { lastLoginFailed, user: req.session.user });
 });
 
 app.post('/login', async (req, res) => {
@@ -134,8 +134,7 @@ app.post('/login', async (req, res) => {
 app.get('/register', (req, res) => {
     registerError = req.session.registerError || {};
     req.session.registerError = null;
-    console.log(registerError);
-    res.render('register', { registerError });
+    res.render('register', { registerError, user: req.session.user });
 });
 
 app.post('/register', async (req, res) => {

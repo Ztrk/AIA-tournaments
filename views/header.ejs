@@ -1,0 +1,28 @@
+<header class="mb-4">
+  <nav class="navbar navbar-expand-md navbar-light bg-light">
+    <a class="navbar-brand" href="/">Tournaments</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navigationBar" aria-controls="navigationBar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navigationBar">
+      <ul class="navbar-nav ml-auto">
+        <% if (user) { %>
+          <li class="nav-item">
+            <a class="nav-link" href="/logout">Log out</a>
+          </li>
+        <% } else { %>
+          <li class="nav-item">
+            <a class="nav-link" href="/login">Log in</a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="/register">Register</a>
+          </li>
+        <% } %>
+      </ul>
+      <% if (user) { %>
+        <span class="navbar-text">Logged in as <%= user.name%></span>
+      <% } %>
+    </div>
+  </nav>
+</header>
