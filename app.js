@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const express = require('express');
+const session = require('express-session');
+const bcrypt = require('bcrypt');
 
 const testData = require('./testData.json');
 
@@ -15,8 +17,8 @@ db.once('open', () => console.log('Connected to MongoDB database'));
 // Create schema
 const usersSchema = new mongoose.Schema({
     name: String,
-    password: String,
-    salt: String
+    email: String,
+    passwordHash: String
 });
 const tournamentSchema = new mongoose.Schema({
     name: String,
@@ -37,6 +39,19 @@ if (shouldInitializeDatabase) {
 }
 
 const app = express();
+
+app.use(express.urlencoded({ extended: true})); // for parsing post body
+
+app.use(session({
+    secret: 'this is very secret',
+    resave: false,
+    saveUninitialized: false
+}));
+
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url} ${new Date()}`);
+    next();
+});
 
 app.set('view engine', 'ejs');
 
@@ -88,10 +103,25 @@ app.get('/', async (req, res) => {
 });
 
 app.get('/login', (req, res) => {
-    res.render('login');
+    const lastLoginFailed = req.session.lastLoginFailed;
+    req.session.lastLoginFailed = false;
+    res.render('login', { lastLoginFailed });
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
+    if (req.body.username && req.body.password) {
+        const user = await User.findOne({ name: req.body.username });
+        if (user) {
+            const isCorrect = await bcrypt.compare(req.body.password, user.passwordHash);
+            if (isCorrect) {
+                req.session.user = user;
+                req.session.lastLoginFailed = false;
+                res.redirect(303, '/');
+                return;
+            }
+        }
+        req.session.lastLoginFailed = true;
+    }
     res.redirect(303, '/login');
 });
 
@@ -99,7 +129,24 @@ app.get('/register', (req, res) => {
     res.render('register');
 });
 
-app.post('/register', (req, res) => {
+app.post('/register', async (req, res) => {
+    const bcryptRounds = 12;
+    if (req.body.username && req.body.email && req.body.password && req.body.confirmedPassword) {
+        // username does not exist
+        // email in correct format
+        if (req.body.password == req.body.confirmedPassword) {
+            const passwordHash = await bcrypt.hash(req.body.password, bcryptRounds);
+            const user = new User({ 
+                name: req.body.username,
+                email: req.body.email,
+                passwordHash
+            });
+            console.log(user);
+            await user.save();
+            res.redirect(303, '/');
+            return;
+        }
+    }
     res.redirect(303, '/register');
 });
 
