@@ -35,6 +35,13 @@
         },
         {
             "name" : "It's the last one"
+        },
+        {
+            "name" : "Details",
+            "maxParticipants": 12,
+            "startDate" : "2020-07-06",
+            "registrationDeadline" : "2020-06-29",
+            "location" : "Poznań"
         }
     ]
 }

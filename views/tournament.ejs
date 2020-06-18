@@ -1,0 +1,26 @@
+<%- include('layoutTop', { user }) -%>
+<main class="container">
+  <dl class="row">
+    <dt class="col-sm-2">Name</dt>
+    <dd class="col-sm-10"><%= tournament.name %></dd>
+
+    <dt class="col-sm-2">Organizer</dt>
+    <dd class="col-sm-10"><%= tournament.organizer ? tournament.organizer.name : '' %></dd>
+
+    <dt class="col-sm-2">Location</dt>
+    <dd class="col-sm-10"><%= tournament.location %></dd>
+
+    <dt class="col-sm-2">Current participants</dt>
+    <dd class="col-sm-10"><%= tournament.participants.length %></dd>
+
+    <dt class="col-sm-2">Max participants</dt>
+    <dd class="col-sm-10"><%= tournament.maxParticipants %></dd>
+
+    <dt class="col-sm-2">Start date</dt>
+    <dd class="col-sm-10"><%= tournament.startDate ? tournament.startDate.toLocaleDateString() : '' %></dd>
+
+    <dt class="col-sm-2">Registration deadline</dt>
+    <dd class="col-sm-10"><%= tournament.registrationDeadline ? tournament.registrationDeadline.toLocaleDateString() : '' %></dd>
+  </dl>
+</main>
+<%- include('layoutBottom') -%>

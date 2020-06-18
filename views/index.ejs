@@ -1,12 +1,16 @@
 <%- include('layoutTop', { user }) -%>
 <main class="container">
-  <ul class="list-group">
+  <div class="list-group">
   <% tournaments.forEach(tournament => { %>
-    <li class="list-group-item"><%= tournament.name %></li>
+    <a 
+      class="list-group-item"
+      href="/tournaments/<%= tournament.id %>">
+        <%= tournament.name %>
+      </a>
   <% }); %>
-  </ul>
+  </div>
 
-  <nav aria-label="Tournaments pages">
+  <nav aria-label="Tournaments pages" class="mt-2">
     <ul class="pagination">
       <%- include('pageItem', { page: pages.previous, linkText: 'Previous' }) %>
       <% pages.pages.forEach(page => { %>

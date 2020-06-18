@@ -36,7 +36,8 @@ router.get('/', async (req, res) => {
             pages.next.disabled = true;
         }
 
-        for (let i = Math.max(1, Math.min(page - 2, numPages - 4)), j = Math.min(i + 4, numPages); i <= j; ++i) {
+        for (let i = Math.max(1, Math.min(page - 2, numPages - 4)), 
+                 j = Math.min(i + 4, numPages); i <= j; ++i) {
             pages.pages.push(new Page(i, i == page));
         }
 
@@ -47,6 +48,12 @@ router.get('/', async (req, res) => {
     catch (error) {
         console.log(error);
     }
+});
+
+router.get('/tournaments/:id', async (req, res) => {
+    const tournament = await Tournament.findById(req.params.id).populate('organizer');
+    console.log(tournament);
+    res.render('tournament', { tournament, user: req.session.user });
 });
 
 module.exports = router;
