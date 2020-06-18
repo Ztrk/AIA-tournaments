@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const Tournament = require('./tournament');
 const router = express.Router();
 
@@ -51,8 +52,20 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/tournaments/:id', async (req, res) => {
+    if (!mongoose.isValidObjectId(req.params.id)) {
+        res.status(404);
+        res.render('error', { errorMessage: '404 Not Found', user: req.session.user });
+        return;
+    }
+
     const tournament = await Tournament.findById(req.params.id).populate('organizer');
-    console.log(tournament);
+
+    if (tournament == null) {
+        res.status(404);
+        res.render('error', { errorMessage: '404 Not Found', user: req.session.user });
+        return;
+    }
+
     res.render('tournament', { tournament, user: req.session.user });
 });
 
