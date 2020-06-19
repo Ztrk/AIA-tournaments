@@ -11,6 +11,17 @@ class Page {
     }
 }
 
+function isEditAllowed(tournament, user) {
+    if (!user) {
+        return false;
+    }
+    if (!tournament.organizer._id 
+            || tournament.organizer._id.toString() !== user._id) {
+        return false;
+    }
+    return true;
+}
+
 router.get('/', async (req, res) => {
     const itemsPerPage = 10;
     let page = 1
@@ -66,7 +77,11 @@ router.get('/tournaments/:id/details', async (req, res) => {
         return;
     }
 
-    res.render('tournament', { tournament, user: req.session.user });
+    res.render('tournament', { 
+        tournament, 
+        editAllowed: isEditAllowed(tournament, req.session.user), 
+        user: req.session.user 
+    });
 });
 
 router.get('/tournaments/new', async (req, res) => {
