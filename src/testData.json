@@ -34,7 +34,11 @@
             "name" : "No idea for names"
         },
         {
-            "name" : "It's the last one"
+            "name" : "It's the last one",
+            "maxParticipants": 4,
+            "startDate" : "2020-06-30",
+            "registrationDeadline" : "2020-06-30",
+            "location" : "Poznań"
         },
         {
             "name" : "Details",

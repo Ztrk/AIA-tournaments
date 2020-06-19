@@ -15,8 +15,24 @@ const tournamentSchema = new mongoose.Schema({
         winner2: { type: mongoose.Types.ObjectId, ref: 'User' },
         winner: { type: mongoose.Types.ObjectId, ref: 'User' },
     }],
-    startDate: Date,
-    registrationDeadline: Date,
+    startDate: {
+        type: Date,
+        validate: {
+            validator: value => value >= Date.now(),
+            message: props => `Start date ${props.value} is in the past`
+        }
+    },
+    registrationDeadline: {
+        type: Date,
+        validate: {
+            validator: function(value) {
+                if (this) {
+                    return this.registrationDeadline <= this.startDate;
+                }
+            },
+            message: props => `Registration deadline ${props.value} is after start date`
+        }
+    },
     location: String
 });
 

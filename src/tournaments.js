@@ -76,7 +76,7 @@ router.get('/tournaments/new', async (req, res) => {
     }
     const tournament = req.session.editedTournament || new Tournament();
     const validationError = req.session.validationError || {};
-    res.render('tournamentForm', { 
+    res.render('tournamentForm', {
         tournament,
         validationError,
         user: req.session.user
@@ -93,8 +93,8 @@ router.post('/tournaments/new', async (req, res) => {
         name: req.body.name,
         organizer: req.session.user,
         maxParticipants: req.body.maxParticipants,
-        startDate: new Date(req.body.startDate),
-        registrationDeadline: new Date(req.body.registrationDeadline),
+        startDate: req.body.startDate,
+        registrationDeadline: req.body.registrationDeadline,
         location: req.body.location
     });
 
