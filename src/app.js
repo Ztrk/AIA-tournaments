@@ -6,7 +6,7 @@ const tournaments = require('./tournaments');
 const accounts = require('./accounts');
 const testData = require('./testData.json');
 
-const shouldInitializeDatabase = true;
+const shouldInitializeDatabase = false;
 
 // Connect to database
 mongoose.connect('mongodb://localhost:27017/tournaments', {useNewUrlParser: true});
@@ -16,8 +16,8 @@ db.on('error', () => console.error.bind(console, 'connection error:'));
 db.once('open', () => console.log('Connected to MongoDB database'));
 
 async function initializeDatabase() {
-    await Tournament.deleteMany({})
-    await Tournament.create(...testData.tournaments);
+    await Tournament.deleteMany({});
+    await Tournament.create(testData.tournaments[0]);
 }
 
 if (shouldInitializeDatabase) {

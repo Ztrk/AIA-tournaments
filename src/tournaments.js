@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
     }
 
     try {
-        let numPages = Math.ceil((await Tournament.estimatedDocumentCount()) / 10);
+        let numPages = Math.ceil(Math.max((await Tournament.estimatedDocumentCount()), 1) / 10);
         page = Math.min(page, numPages);
 
         const pages = { 
