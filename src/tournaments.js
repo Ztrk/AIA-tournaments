@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const Tournament = require('./tournament');
+const User = require('./user');
 const router = express.Router();
 
 class Page {
@@ -20,6 +21,20 @@ function isEditAllowed(tournament, user) {
         return false;
     }
     return true;
+}
+
+function ensureLoggedIn(req, res, next) {
+    if (!req.session.user) {
+        res.redirect('/login');
+        return;
+    }
+    next();
+}
+
+function fieldFromMongoError(error) {
+    return error.toString()
+    .split('index: ')[1]
+    .split('_')[0]
 }
 
 router.get('/', async (req, res) => {
@@ -84,11 +99,9 @@ router.get('/tournaments/:id/details', async (req, res) => {
     });
 });
 
+router.use('/tournaments/new', ensureLoggedIn);
+
 router.get('/tournaments/new', async (req, res) => {
-    if (!req.session.user) {
-        res.redirect('/login');
-        return;
-    }
     const tournament = req.session.editedTournament 
         ? new Tournament(req.session.editedTournament) : new Tournament();
 
@@ -103,11 +116,6 @@ router.get('/tournaments/new', async (req, res) => {
 });
 
 router.post('/tournaments/new', async (req, res) => {
-    if (!req.session.user) {
-        res.redirect('/login');
-        return;
-    }
-
     const tournament = new Tournament({
         name: req.body.name,
         organizer: req.session.user,
@@ -143,12 +151,9 @@ router.post('/tournaments/new', async (req, res) => {
     res.redirect(303, `/tournaments/${tournament._id}/details`)
 });
 
-router.get('/tournaments/:id/edit', async (req, res) => {
-    if (!req.session.user) {
-        res.redirect('/login');
-        return;
-    }
+router.use('/tournaments/:id/edit', ensureLoggedIn);
 
+router.get('/tournaments/:id/edit', async (req, res) => {
     if (!mongoose.isValidObjectId(req.params.id)) {
         res.status(404);
         res.render('error', { errorMessage: '404 Not Found', user: req.session.user });
@@ -190,11 +195,6 @@ router.get('/tournaments/:id/edit', async (req, res) => {
 });
 
 router.post('/tournaments/:id/edit', async (req, res) => {
-    if (!req.session.user) {
-        res.redirect('/login');
-        return;
-    }
-
     if (!mongoose.isValidObjectId(req.params.id)) {
         res.redirect(303, '');
         return;
@@ -243,6 +243,71 @@ router.post('/tournaments/:id/edit', async (req, res) => {
         return;
     }
     res.redirect(303, 'details');
+});
+
+router.use('/tournaments/:id/register/ranking', ensureLoggedIn);
+
+router.get('/tournaments/:id/register/ranking', async (req, res) => {
+    const user = new User(req.session.user);
+    const validationError = req.session.validationError || {};
+    delete req.session.validationError;
+    res.render('userRankingForm', { validationError, user });
+});
+
+router.post('/tournaments/:id/register/ranking', async (req, res) => {
+    const user = new User(req.session.user);
+    if (!req.body.licenseId || !req.body.ranking) {
+        res.redirect(303, '');
+        res.session.validationError = { licenseId: true, ranking: true };
+        return;
+    }
+
+    try {
+        await user.updateOne({ 
+            licenseId: req.body.licenseId,
+            ranking: req.body.ranking
+        }, { runValidators: true });
+
+        user.licenseId = req.body.licenseId;
+        user.ranking = req.body.ranking;
+    }
+    catch (error) {
+        req.session.validationError = {};
+        if (error.code === 11000) {
+            const field = fieldFromMongoError(error);
+            if (field === 'licenseId') {
+                req.session.validationError.licenseId = true;
+            }
+            else if (field === 'ranking') {
+                req.session.validationError.ranking = true;
+            }
+        }
+        else if (error instanceof mongoose.Error.ValidationError) {
+            if (error.errors.licenseId instanceof mongoose.Error.ValidatorError) {
+                req.session.validationError.licenseId = true;
+            }
+            if (error.errors.ranking instanceof mongoose.Error.ValidatorError) {
+                req.session.validationError.ranking = true;
+            }
+        }
+        else {
+            console.error(error);
+        }
+        res.redirect(303, '');
+        return;
+    }
+    req.session.user = user;
+    res.redirect(303, '../register');
+});
+
+router.use('/tournaments/:id/register', ensureLoggedIn);
+
+router.get('/tournaments/:id/register', async (req, res) => {
+    res.render('tournamentRegistration', { user: req.session.user });
+});
+
+router.post('/tournaments/:id/register', async (req, res) => {
+    res.redirect(303, '');
 });
 
 module.exports = router;

@@ -9,7 +9,16 @@ const usersSchema = new mongoose.Schema({
         type: String,
         match: /^.+@.+$/
     },
-    passwordHash: String
+    passwordHash: String,
+    licenseId: {
+        type: String,
+        unique: true
+    },
+    ranking: {
+        type: Number,
+        min: 1,
+        unique: true
+    }
 });
 
 const User = mongoose.model('User', usersSchema);

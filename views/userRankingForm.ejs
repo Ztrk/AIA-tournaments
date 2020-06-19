@@ -1,0 +1,42 @@
+<%- include('layoutTop', { user }) -%>
+<main class="container">
+  <form method="POST">
+    <div class="form-group form-row justify-content-center">
+      <label for="licenseIdInput" class="col-sm-3 col-md-2">License ID</label>
+      <input 
+        type="text" 
+        class="form-control col-sm-9 col-md-6
+          <%= validationError.licenseId ? 'is-invalid' : ''%>"
+        id="licenseIdInput" 
+        name="licenseId"
+        value="<%= user.licenseId %>"
+        required
+      >
+      <div class="invalid-feedback offset-md-2">
+        There is another user with this license ID
+      </div>
+    </div>
+
+    <div class="form-group form-row justify-content-center">
+      <label for="rankingInput" class="col-sm-3 col-md-2">Ranking</label>
+      <input 
+        type="number" 
+        class="form-control col-sm-9 col-md-6
+          <%= validationError.ranking ? 'is-invalid' : ''%>"
+        id="rankingInput" 
+        name="ranking"
+        value="<%= user.ranking %>"
+        required
+      >
+      <div class="invalid-feedback offset-md-2">
+        Please provide valid ranking
+      </div>
+    </div>
+
+    <div class="form-row">
+      <button type="submit" class="offset-md-2 btn btn-primary">Confirm</button>
+      <a class="btn btn-primary ml-2" href="../register">Skip</a>
+    </div>
+  </form>
+</main>
+<%- include('layoutBottom') -%>
