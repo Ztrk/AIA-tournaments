@@ -1,0 +1,93 @@
+<%- include('layoutTop', { user }) -%>
+<main class="container">
+  <form method="POST">
+    <div class="form-group form-row justify-content-center">
+      <label for="nameInput" class="col-sm-3 col-md-2">Name</label>
+      <input 
+        type="text" 
+        class="form-control col-sm-9 col-md-6
+          <%= validationError.name ? 'is-invalid' : ''%>"
+        id="nameInput" 
+        name="name"
+        value="<%= tournament.name %>"
+        required
+      >
+      <div class="invalid-feedback offset-md-2">
+        Name is not valid
+      </div>
+    </div>
+
+    <div class="form-group form-row justify-content-center">
+      <label for="locationInput" class="col-sm-3 col-md-2">Location</label>
+      <input 
+        type="text" 
+        class="form-control col-sm-9 col-md-6
+          <%= validationError.location ? 'is-invalid' : ''%>"
+        id="locationInput" 
+        name="location"
+        value="<%= tournament.location %>"
+        required
+      >
+      <div class="invalid-feedback offset-md-2">
+        Location is not valid
+      </div>
+    </div>
+
+    <div class="form-group form-row justify-content-center">
+      <label for="maxParticipantsInput" class="col-sm-3 col-md-2">Maximum participants</label>
+      <input 
+        type="number" 
+        class="form-control col-sm-9 col-md-6
+          <%= validationError.maxParticipants ? 'is-invalid' : ''%>"
+        id="maxParticipantsInput" 
+        name="maxParticipants"
+        value="<%= tournament.maxParticipants %>"
+        required
+      >
+      <div class="invalid-feedback offset-md-2">
+        There must be at least 2 participants
+      </div>
+    </div>
+
+    <div class="form-group form-row justify-content-center">
+      <label for="startDateInput" class="col-sm-3 col-md-2">Start date</label>
+      <input 
+        type="date" 
+        class="form-control col-sm-9 col-md-6
+          <%= validationError.startDate ? 'is-invalid' : ''%>"
+        id="startDateInput" 
+        name="startDate"
+        value="<%= tournament.startDate && 
+          tournament.startDate.toISOString().substring(0, 10) %>"
+        required
+      >
+      <div class="invalid-feedback offset-md-2">
+        Start date is invalid
+      </div>
+    </div>
+
+    <div class="form-group form-row justify-content-center">
+      <label for="registrationDeadlineInput" class="col-sm-3 col-md-2">
+        Registration deadline
+      </label>
+      <input 
+        type="date" 
+        class="form-control col-sm-9 col-md-6
+          <%= validationError.registrationDeadline ? 'is-invalid' : ''%>"
+        id="registrationDeadlineInput" 
+        name="registrationDeadline"
+        value="<%= tournament.registrationDeadline && 
+          tournament.registrationDeadline.toISOString().substring(0, 10) %>"
+        required
+      >
+      <div class="invalid-feedback offset-md-2">
+        Regsitration deadline is invalid
+      </div>
+    </div>
+
+    <div class="form-row">
+      <button type="submit" class="offset-md-2 btn btn-primary">Create</button>
+    </div>
+  </form>
+</main>
+<%- include('layoutBottom') -%>

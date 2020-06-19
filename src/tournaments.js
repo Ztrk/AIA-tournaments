@@ -51,7 +51,7 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.get('/tournaments/:id', async (req, res) => {
+router.get('/tournaments/:id/details', async (req, res) => {
     if (!mongoose.isValidObjectId(req.params.id)) {
         res.status(404);
         res.render('error', { errorMessage: '404 Not Found', user: req.session.user });
@@ -67,6 +67,61 @@ router.get('/tournaments/:id', async (req, res) => {
     }
 
     res.render('tournament', { tournament, user: req.session.user });
+});
+
+router.get('/tournaments/new', async (req, res) => {
+    if (!req.session.user) {
+        res.redirect('/login');
+        return;
+    }
+    const tournament = req.session.editedTournament || new Tournament();
+    const validationError = req.session.validationError || {};
+    res.render('tournamentForm', { 
+        tournament,
+        validationError,
+        user: req.session.user
+    });
+});
+
+router.post('/tournaments/new', async (req, res) => {
+    if (!req.session.user) {
+        res.redirect('/login');
+        return;
+    }
+
+    const tournament = new Tournament({
+        name: req.body.name,
+        organizer: req.session.user,
+        maxParticipants: req.body.maxParticipants,
+        startDate: new Date(req.body.startDate),
+        registrationDeadline: new Date(req.body.registrationDeadline),
+        location: req.body.location
+    });
+
+    try {
+        await tournament.save();
+    }
+    catch (error) {
+        req.session.validationError = {};
+        if (error instanceof mongoose.Error.ValidationError) {
+            if (error.errors.maxParticipants instanceof mongoose.Error.ValidatorError) {
+                req.session.validationError.maxParticipants = true;
+            }
+            else if (error.errors.startDate instanceof mongoose.Error.ValidatorError) {
+                req.session.validationError.startDate = true;
+            }
+            else if (error.errors.registrationDeadline instanceof mongoose.Error.ValidatorError) {
+                req.session.validationError.registrationDeadline = true;
+            }
+        }
+        else {
+            console.error(error);
+        }
+        req.session.editedTournament = tournament;
+        res.redirect(303, '/tournaments/new');
+        return;
+    }
+    res.redirect(303, `/tournaments/${tournament._id}/details`)
 });
 
 module.exports = router;
