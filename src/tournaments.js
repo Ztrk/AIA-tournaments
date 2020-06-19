@@ -74,8 +74,12 @@ router.get('/tournaments/new', async (req, res) => {
         res.redirect('/login');
         return;
     }
-    const tournament = req.session.editedTournament || new Tournament();
+    const tournament = req.session.editedTournament 
+        ? new Tournament(req.session.editedTournament) : new Tournament();
+
     const validationError = req.session.validationError || {};
+    delete req.session.editedTournament;
+    delete req.session.validationError;
     res.render('tournamentForm', {
         tournament,
         validationError,
@@ -107,10 +111,10 @@ router.post('/tournaments/new', async (req, res) => {
             if (error.errors.maxParticipants instanceof mongoose.Error.ValidatorError) {
                 req.session.validationError.maxParticipants = true;
             }
-            else if (error.errors.startDate instanceof mongoose.Error.ValidatorError) {
+            if (error.errors.startDate instanceof mongoose.Error.ValidatorError) {
                 req.session.validationError.startDate = true;
             }
-            else if (error.errors.registrationDeadline instanceof mongoose.Error.ValidatorError) {
+            if (error.errors.registrationDeadline instanceof mongoose.Error.ValidatorError) {
                 req.session.validationError.registrationDeadline = true;
             }
         }
@@ -122,6 +126,108 @@ router.post('/tournaments/new', async (req, res) => {
         return;
     }
     res.redirect(303, `/tournaments/${tournament._id}/details`)
+});
+
+router.get('/tournaments/:id/edit', async (req, res) => {
+    if (!req.session.user) {
+        res.redirect('/login');
+        return;
+    }
+
+    if (!mongoose.isValidObjectId(req.params.id)) {
+        res.status(404);
+        res.render('error', { errorMessage: '404 Not Found', user: req.session.user });
+        return;
+    }
+
+    const tournament = await Tournament.findById(req.params.id).populate('organizer');
+
+    if (tournament == null) {
+        res.status(404);
+        res.render('error', { errorMessage: '404 Not Found', user: req.session.user });
+        return;
+    }
+
+    if (!tournament.organizer || 
+            tournament.organizer._id.toString() !== req.session.user._id) {
+        res.status(403);
+        res.render('error', { 
+            errorMessage: '403 Forbidden\nOnly tournament organizer can edit tournament.', 
+            user: req.session.user 
+        });
+        return;
+    }
+
+    let editedTournament = tournament;
+    if (req.session.editedTournament && 
+            req.session.editedTournament._id == tournament._id.toString()) {
+        editedTournament = new Tournament(req.session.editedTournament);
+    }
+
+    const validationError = req.session.validationError || {};
+    delete req.session.editedTournament;
+    delete req.session.validationError;
+    res.render('tournamentForm', {
+        tournament: editedTournament,
+        validationError,
+        user: req.session.user
+    });
+});
+
+router.post('/tournaments/:id/edit', async (req, res) => {
+    if (!req.session.user) {
+        res.redirect('/login');
+        return;
+    }
+
+    if (!mongoose.isValidObjectId(req.params.id)) {
+        res.redirect(303, '');
+        return;
+    }
+
+    const tournament = await Tournament.findById(req.params.id).populate('organizer');
+
+    if (tournament == null) {
+        res.redirect(303, '');
+        return;
+    }
+
+    if (!tournament.organizer || 
+            tournament.organizer._id.toString() !== req.session.user._id) {
+        res.redirect(303, '');
+        return;
+    }
+
+    tournament.name = req.body.name,
+    tournament.maxParticipants = req.body.maxParticipants,
+    tournament.startDate = req.body.startDate,
+    tournament.registrationDeadline = req.body.registrationDeadline,
+    tournament.location = req.body.location
+
+    try {
+        await tournament.save();
+    }
+    catch (error) {
+        req.session.validationError = {};
+        if (error instanceof mongoose.Error.ValidationError) {
+            if (error.errors.maxParticipants instanceof mongoose.Error.ValidatorError) {
+                req.session.validationError.maxParticipants = true;
+            }
+            if (error.errors.startDate instanceof mongoose.Error.ValidatorError) {
+                req.session.validationError.startDate = true;
+            }
+            if (error.errors.registrationDeadline instanceof mongoose.Error.ValidatorError) {
+                req.session.validationError.registrationDeadline = true;
+            }
+        }
+        else {
+            console.error(error);
+        }
+        req.session.editedTournament = tournament;
+        res.redirect(303, '');
+        return;
+    }
+    res.redirect(303, 'details');
 });
 
 module.exports = router;
