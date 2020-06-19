@@ -37,6 +37,28 @@ function fieldFromMongoError(error) {
     .split('_')[0]
 }
 
+async function getTournamentById(req, res, next) {
+    if (mongoose.isValidObjectId(req.params.id)) {
+        const tournament = await Tournament.findById(req.params.id).populate('organizer');
+        if (tournament) {
+            req.tournament = tournament;
+            next();
+            return;
+        }
+    }
+
+    if (req.method === "GET") {
+        res.status(404);
+        res.render('error', { 
+            errorMessage: '404 Tournament Not Found', 
+            user: req.session.user 
+        });
+    }
+    else {
+        res.redirect(303, '');
+    }
+}
+
 router.get('/', async (req, res) => {
     const itemsPerPage = 10;
     let page = 1
@@ -77,21 +99,17 @@ router.get('/', async (req, res) => {
     }
 });
 
+router.use('/tournaments/:id', (req, res, next) => {
+    if (req.baseUrl === '/tournaments/new' && req.path === '/') {
+        next();
+    }
+    else {
+        getTournamentById(req, res, next);
+    }
+});
+
 router.get('/tournaments/:id/details', async (req, res) => {
-    if (!mongoose.isValidObjectId(req.params.id)) {
-        res.status(404);
-        res.render('error', { errorMessage: '404 Not Found', user: req.session.user });
-        return;
-    }
-
-    const tournament = await Tournament.findById(req.params.id).populate('organizer');
-
-    if (tournament == null) {
-        res.status(404);
-        res.render('error', { errorMessage: '404 Not Found', user: req.session.user });
-        return;
-    }
-
+    const tournament = req.tournament;
     res.render('tournament', { 
         tournament, 
         editAllowed: isEditAllowed(tournament, req.session.user), 
@@ -154,19 +172,7 @@ router.post('/tournaments/new', async (req, res) => {
 router.use('/tournaments/:id/edit', ensureLoggedIn);
 
 router.get('/tournaments/:id/edit', async (req, res) => {
-    if (!mongoose.isValidObjectId(req.params.id)) {
-        res.status(404);
-        res.render('error', { errorMessage: '404 Not Found', user: req.session.user });
-        return;
-    }
-
-    const tournament = await Tournament.findById(req.params.id).populate('organizer');
-
-    if (tournament == null) {
-        res.status(404);
-        res.render('error', { errorMessage: '404 Not Found', user: req.session.user });
-        return;
-    }
+    const tournament = req.tournament;
 
     if (!tournament.organizer || 
             tournament.organizer._id.toString() !== req.session.user._id) {
@@ -195,17 +201,7 @@ router.get('/tournaments/:id/edit', async (req, res) => {
 });
 
 router.post('/tournaments/:id/edit', async (req, res) => {
-    if (!mongoose.isValidObjectId(req.params.id)) {
-        res.redirect(303, '');
-        return;
-    }
-
-    const tournament = await Tournament.findById(req.params.id).populate('organizer');
-
-    if (tournament == null) {
-        res.redirect(303, '');
-        return;
-    }
+    const tournament = req.tournament;
 
     if (!tournament.organizer || 
             tournament.organizer._id.toString() !== req.session.user._id) {
@@ -303,10 +299,21 @@ router.post('/tournaments/:id/register/ranking', async (req, res) => {
 router.use('/tournaments/:id/register', ensureLoggedIn);
 
 router.get('/tournaments/:id/register', async (req, res) => {
+    const error = req.session.registrationError;
+    if (error) {
+        delete req.session.registrationError;
+        res.render('error', { 
+            errorMessage: error, 
+            user: req.session.user 
+        });
+        return;
+    }
     res.render('tournamentRegistration', { user: req.session.user });
 });
 
 router.post('/tournaments/:id/register', async (req, res) => {
+    const tournament = req.tournament;
+    req.session.registrationError = 'Registration not implemented';
     res.redirect(303, '');
 });
 
