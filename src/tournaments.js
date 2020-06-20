@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Tournament = require('./tournament');
 const User = require('./user');
+const { ensureLoggedIn, fieldFromMongoError } = require('./utils');
 const router = express.Router();
 
 class Page {
@@ -44,20 +45,6 @@ function canUserRegister(tournament, user) {
     }
 
     return true;
-}
-
-function ensureLoggedIn(req, res, next) {
-    if (!req.session.user) {
-        res.redirect('/login');
-        return;
-    }
-    next();
-}
-
-function fieldFromMongoError(error) {
-    return error.toString()
-    .split('index: ')[1]
-    .split('_')[0]
 }
 
 async function getTournamentById(req, res, next) {

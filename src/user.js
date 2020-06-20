@@ -1,15 +1,26 @@
 const mongoose = require('mongoose');
 
 const usersSchema = new mongoose.Schema({
-    name: {
+    username: {
         type: String,
-        unique: true // builds unique index
+        match: /^\w+$/,
+        minlength: 4,
+        maxlength: 32,
+        required: true,
+        unique: true
     },
     email: {
         type: String,
-        match: /^.+@.+$/
+        match: /^.+@.+$/,
+        required: true,
+        unique: true
     },
-    passwordHash: String,
+    firstname: String,
+    lastname: String,
+    passwordHash: {
+        type: String,
+        required: true
+    },
     licenseId: {
         type: String,
         index: { unique: true, partialFilterExpression: { licenseId: { $exists: true } } }
