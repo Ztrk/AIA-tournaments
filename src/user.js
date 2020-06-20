@@ -12,12 +12,12 @@ const usersSchema = new mongoose.Schema({
     passwordHash: String,
     licenseId: {
         type: String,
-        unique: true
+        index: { unique: true, partialFilterExpression: { licenseId: { $exists: true } } }
     },
     ranking: {
         type: Number,
         min: 1,
-        unique: true
+        index: { unique: true, partialFilterExpression: { licenseId: { $exists: true } } }
     }
 });
 

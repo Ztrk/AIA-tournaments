@@ -8,6 +8,10 @@ const tournamentSchema = new mongoose.Schema({
         min: 2
     },
     participants: [{ type: mongoose.Types.ObjectId, ref: 'User' }],
+    numParticipants: {
+        type: Number,
+        default: 0
+    },
     games: [{
         player1: { type: mongoose.Types.ObjectId, ref: 'User' },
         player2: { type: mongoose.Types.ObjectId, ref: 'User' },

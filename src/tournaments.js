@@ -23,6 +23,29 @@ function isEditAllowed(tournament, user) {
     return true;
 }
 
+function canUserRegister(tournament, user) {
+    if (tournament.registrationDeadline < Date.now()) {
+        return false
+    }
+
+    if (tournament.participants.length >= tournament.maxParticipants) {
+        return false;
+    }
+
+    if (!user) {
+        return true;
+    }
+
+    const isUserRegistered = tournament.participants.some(participant => 
+        participant._id.toString() === user._id
+    );
+    if (isUserRegistered) {
+        return false;
+    }
+
+    return true;
+}
+
 function ensureLoggedIn(req, res, next) {
     if (!req.session.user) {
         res.redirect('/login');
@@ -55,7 +78,7 @@ async function getTournamentById(req, res, next) {
         });
     }
     else {
-        res.redirect(303, '');
+        res.redirect(303, req.originalUrl);
     }
 }
 
@@ -113,6 +136,7 @@ router.get('/tournaments/:id/details', async (req, res) => {
     res.render('tournament', { 
         tournament, 
         editAllowed: isEditAllowed(tournament, req.session.user), 
+        registrationAllowed: canUserRegister(tournament, req.session.user),
         user: req.session.user 
     });
 });
@@ -205,7 +229,7 @@ router.post('/tournaments/:id/edit', async (req, res) => {
 
     if (!tournament.organizer || 
             tournament.organizer._id.toString() !== req.session.user._id) {
-        res.redirect(303, '');
+        res.redirect(303, 'edit');
         return;
     }
 
@@ -235,7 +259,7 @@ router.post('/tournaments/:id/edit', async (req, res) => {
             console.error(error);
         }
         req.session.editedTournament = tournament;
-        res.redirect(303, '');
+        res.redirect(303, 'edit');
         return;
     }
     res.redirect(303, 'details');
@@ -253,7 +277,7 @@ router.get('/tournaments/:id/register/ranking', async (req, res) => {
 router.post('/tournaments/:id/register/ranking', async (req, res) => {
     const user = new User(req.session.user);
     if (!req.body.licenseId || !req.body.ranking) {
-        res.redirect(303, '');
+        res.redirect(303, 'ranking');
         res.session.validationError = { licenseId: true, ranking: true };
         return;
     }
@@ -289,7 +313,7 @@ router.post('/tournaments/:id/register/ranking', async (req, res) => {
         else {
             console.error(error);
         }
-        res.redirect(303, '');
+        res.redirect(303, 'ranking');
         return;
     }
     req.session.user = user;
@@ -313,8 +337,44 @@ router.get('/tournaments/:id/register', async (req, res) => {
 
 router.post('/tournaments/:id/register', async (req, res) => {
     const tournament = req.tournament;
-    req.session.registrationError = 'Registration not implemented';
-    res.redirect(303, '');
+
+    const isUserRegistered = tournament.participants.some(user => 
+        user._id.toString() === req.session.user._id
+    );
+    if (isUserRegistered) {
+        req.session.registrationError = 'You are already registered';
+        res.redirect(303, 'register');
+        return;
+    }
+
+    if (tournament.registrationDeadline < Date.now()) {
+        req.session.registrationError = 'Registration deadline has passed';
+        res.redirect(303, 'register');
+        return;
+    }
+
+    if (tournament.participants.length >= tournament.maxParticipants) {
+        req.session.registrationError = 'All places already taken';
+        res.redirect(303, 'register');
+        return;
+    }
+
+    const userId = req.session.user._id
+    const result = await Tournament.updateOne({ 
+            _id: tournament._id,
+            numParticipants: { $lt : tournament.maxParticipants},
+            participants: { $not : { $elemMatch: { _id: userId } } }
+        }, {
+            $push: { participants: userId },
+            $inc: { numParticipants: 1 }
+        }
+    );
+
+    if (result.modifiedCount === 0) {
+        req.session.registrationError = 'Too many users registered';
+    }
+
+    res.redirect(303, '/');
 });
 
 module.exports = router;

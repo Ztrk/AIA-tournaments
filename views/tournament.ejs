@@ -22,7 +22,11 @@
     <dt class="col-sm-3">Registration deadline</dt>
     <dd class="col-sm-9"><%= tournament.registrationDeadline ? tournament.registrationDeadline.toLocaleDateString() : '' %></dd>
   </dl>
-  <a href="register/ranking" class="btn btn-primary">Register</a>
+  <% if (registrationAllowed) { %>
+    <a href="register/ranking" class="btn btn-primary">Register</a>
+  <% } else { %>
+    <a class="btn btn-primary disabled" aria-disabled="true">Register</a>
+  <% } %>
   <% if (editAllowed) { %>
     <a href="edit" class="btn btn-primary">Edit</a>
   <% } %>
