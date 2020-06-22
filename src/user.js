@@ -12,6 +12,7 @@ const usersSchema = new mongoose.Schema({
     email: {
         type: String,
         match: /^.+@.+$/,
+        maxlength: 254,
         required: true,
         unique: true
     },
@@ -29,7 +30,11 @@ const usersSchema = new mongoose.Schema({
         type: Number,
         min: 1,
         index: { unique: true, partialFilterExpression: { licenseId: { $exists: true } } }
-    }
+    },
+    emailVerificationToken: String,
+    emailVerificationTime: Date,
+    passwordResetToken: String,
+    passwordResetTime: Date
 });
 
 const User = mongoose.model('User', usersSchema);

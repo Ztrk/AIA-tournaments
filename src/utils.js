@@ -5,6 +5,22 @@ module.exports = {
             res.redirect('/login');
             return;
         }
+        if (req.session.user.emailVerificationToken) {
+            res.redirect('/requireConfirmation');
+            return;
+        }
+        next();
+    },
+
+    ensureNotConfirmed: function(req, res, next) {
+        if (!req.session.user) {
+            res.redirect('/login');
+            return;
+        }
+        if (!req.session.user.emailVerificationToken) {
+            res.redirect('/');
+            return;
+        }
         next();
     },
 

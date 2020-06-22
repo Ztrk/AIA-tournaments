@@ -1,0 +1,17 @@
+<%- include('layoutTop', { user }) -%>
+<main class="container">
+  <div class="alert alert-warning" role="alert">
+    <h4 class="alert-heading">Email confirmation</h4>
+
+    To complete registration you need to confirm your email.
+    We sent a cofirmation link to your inbox. Link is valid for 24 hours.
+    If you didn't receive an email you may resend it.
+  </div>
+
+  <form method="POST" action="/resend">
+    <div class="form-row">
+      <button type="submit" class="btn btn-primary">Resend link</button>
+    </div>
+  </form>
+</main>
+<%- include('layoutBottom') -%>
