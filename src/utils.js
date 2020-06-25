@@ -2,11 +2,11 @@
 module.exports = {
     ensureLoggedIn: function(req, res, next) {
         if (!req.session.user) {
-            res.redirect('/login');
+            res.redirect('/users/login');
             return;
         }
         if (req.session.user.emailVerificationToken) {
-            res.redirect('/requireConfirmation');
+            res.redirect('/users/requireConfirmation');
             return;
         }
         next();
@@ -14,7 +14,7 @@ module.exports = {
 
     ensureNotConfirmed: function(req, res, next) {
         if (!req.session.user) {
-            res.redirect('/login');
+            res.redirect('/users/login');
             return;
         }
         if (!req.session.user.emailVerificationToken) {

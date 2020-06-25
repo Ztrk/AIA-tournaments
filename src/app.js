@@ -43,7 +43,7 @@ app.use((req, res, next) => {
 });
 
 // Routers
-app.use('/', accounts);
+app.use('/users', accounts);
 app.use('/', tournaments);
 
 app.listen(3000, () => 

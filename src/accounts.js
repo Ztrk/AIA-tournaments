@@ -4,7 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const User = require('./user');
-const { fieldFromMongoError, ensureNotLoggedIn, ensureNotConfirmed } = require('./utils');
+const { fieldFromMongoError, ensureNotLoggedIn, ensureNotConfirmed, ensureLoggedIn } = require('./utils');
 const config = require('./config.json')
 const router = express.Router();
 
@@ -110,14 +110,14 @@ router.all('/login', ensureNotLoggedIn);
 router.get('/login', (req, res) => {
     const lastLoginFailed = req.session.lastLoginFailed;
     req.session.lastLoginFailed = false;
-    res.render('login', { lastLoginFailed, user: req.session.user });
+    res.render('users/login', { lastLoginFailed, user: req.session.user });
 });
 
 
 router.post('/login', async (req, res) => {
     if (!req.body.login || !req.body.password) {
         req.session.lastLoginFailed = true;
-        res.redirect(303, '/login');
+        res.redirect(303, 'login');
         return;
     }
 
@@ -127,7 +127,7 @@ router.post('/login', async (req, res) => {
 
     if (!user) {
         req.session.lastLoginFailed = true;
-        res.redirect(303, '/login');
+        res.redirect(303, 'login');
         return;
     }
 
@@ -135,7 +135,7 @@ router.post('/login', async (req, res) => {
 
     if (!isPasswordCorrect) {
         req.session.lastLoginFailed = true;
-        res.redirect(303, '/login');
+        res.redirect(303, 'login');
         return;
     }
 
@@ -149,7 +149,7 @@ router.all('/register', ensureNotLoggedIn);
 router.get('/register', (req, res) => {
     const registerError = req.session.registerError || {};
     req.session.registerError = null;
-    res.render('register', { registerError, user: req.session.user });
+    res.render('users/register', { registerError, user: req.session.user });
 });
 
 router.post('/register', async (req, res) => {
@@ -186,7 +186,7 @@ router.post('/register', async (req, res) => {
     try {
         await user.save();
         req.session.user = user;
-        const link = `${req.hostname}:3000${req.baseUrl}/confirm?token=${emailVerificationToken}`;
+        const link = `http://localhost:3000${req.baseUrl}/confirm?token=${emailVerificationToken}`;
         await sendVerificationMail(user.email, link);
     }
     catch (error) {
@@ -217,14 +217,14 @@ router.post('/register', async (req, res) => {
         return;
     }
 
-    res.redirect(303, '/requireConfirmation');
+    res.redirect(303, 'requireConfirmation');
     return;
 });
 
 router.get('/requireConfirmation', ensureNotConfirmed);
 
 router.get('/requireConfirmation', (req, res) => {
-    res.render('requireConfirmation', { user: req.session.user });
+    res.render('users/requireConfirmation', { user: req.session.user });
 });
 
 router.get('/confirm', ensureNotConfirmed);
@@ -252,7 +252,7 @@ router.get('/confirm', async (req, res) => {
         res.render('error', { errorMessage: '500 Unknown error occurred', user });
         return;
     }
-    res.render('confirmationSuccess', { user });
+    res.render('users/confirmationSuccess', { user });
 });
 
 router.post('/resend', ensureNotConfirmed);
@@ -397,6 +397,11 @@ router.get('/passwordReset/invalidToken', (req, res) => {
 router.get('/passwordReset/success', ensureNotLoggedIn);
 router.get('/passwordReset/success', (req, res) => {
     res.render('users/passwordResetSuccess', { user: req.session.user });
+});
+
+router.get('/profile', ensureLoggedIn);
+router.get('/profile', async (req, res) => {
+
 });
 
 module.exports = router;
