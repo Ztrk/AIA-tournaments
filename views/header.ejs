@@ -13,6 +13,9 @@
           <li class="nav-item">
             <a class="nav-link" href="/users/logout">Log out</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/users/profile">Logged in as <%= user.username%></a>
+          </li>
         <% } else { %>
           <li class="nav-item">
             <a class="nav-link" href="/users/login">Log in</a>
@@ -23,9 +26,6 @@
           </li>
         <% } %>
       </ul>
-      <% if (user) { %>
-        <span class="navbar-text">Logged in as <%= user.username%></span>
-      <% } %>
     </div>
   </nav>
 </header>

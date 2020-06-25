@@ -5,7 +5,8 @@ const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const User = require('./user');
 const { fieldFromMongoError, ensureNotLoggedIn, ensureNotConfirmed, ensureLoggedIn } = require('./utils');
-const config = require('./config.json')
+const config = require('./config.json');
+const Tournament = require('./tournament');
 const router = express.Router();
 
 const TOKEN_LENGTH = 32;
@@ -401,7 +402,11 @@ router.get('/passwordReset/success', (req, res) => {
 
 router.get('/profile', ensureLoggedIn);
 router.get('/profile', async (req, res) => {
-
+    const user = new User(req.session.user);
+    const tournaments = await Tournament.find({ 
+        participants: user.id
+    });
+    res.render('users/userProfile', { tournaments, user: req.session.user });
 });
 
 module.exports = router;

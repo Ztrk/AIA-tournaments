@@ -1,0 +1,23 @@
+<%- include('../layoutTop', { user }) -%>
+<main class="container">
+  <div class="list-group mb-5">
+    <h4>Your tournaments</h4>
+    <% if (tournaments.length === 0) { %>
+      <p>You haven't yet registered in any tournament</p>
+    <% } else { %>
+      <% tournaments.forEach(tournament => { %>
+        <a 
+          class="list-group-item"
+          href="/tournaments/<%= tournament.id %>/details">
+            <%= tournament.name %>
+          </a>
+      <% }); %>
+    <% } %>
+  </div>
+
+  <div class="list-group">
+    <h4>Upcoming games</h4>
+    <p>You have no upcoming games</p>
+  </div>
+</main>
+<%- include('../layoutBottom') -%>
