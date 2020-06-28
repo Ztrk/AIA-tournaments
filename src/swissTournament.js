@@ -1,28 +1,9 @@
+const mongoose = require('mongoose');
+const { Game } = require('./game');
+const { LadderEntry } = require('./ladderEntry');
 
 const WIN_POINTS = 1;
 const LOSE_POINTS = 0;
-
-class Game {
-    constructor(black, white) {
-        this.black = black;
-        this.white = white;
-        this.blackWinner = null;
-        this.whiteWinner = null;
-        this.winner = null;
-    }
-}
-
-class LadderEntry {
-    constructor(player) {
-        this.position = 0;
-        this.player = player;
-        this.points = 0;
-        this.opponentsScore = 0;
-        this.defeatedScore = 0;
-        this.games = 0;
-    }
-
-}
 
 function compareEntries(a, b) {
     if (b.points !== a.points) {
@@ -37,20 +18,21 @@ function compareEntries(a, b) {
 function createLadder(players, rounds) {
     const ladder = new Map();
     for (player of players) {
-        ladder.set(player, { ladderEntry: new LadderEntry(player), opponents: [], defeated: [] })
+        ladder.set(player.id.toString(), { ladderEntry: new LadderEntry({ player }), opponents: [], defeated: [] })
     }
 
-    for (round of rounds) {
-        for (game of round) {
+    for (let round of rounds) {
+        for (let game of round) {
             if (game.winner != null) {
-                let winnerEntry, loserEntry;
-                if (game.black === game.winner) {
-                    winnerEntry = ladder.get(game.black);
-                    loserEntry = ladder.get(game.white);
-                }
-                else {
-                    winnerEntry = ladder.get(game.white);
-                    loserEntry = ladder.get(game.black);
+                const winnerEntry = ladder.get(game.winner.id.toString());
+                let loserEntry = null;
+                if (game.white && game.black) {
+                    if (game.white.id !== game.winner.id) {
+                        loserEntry = ladder.get(game.white.id.toString());
+                    }
+                    else {
+                        loserEntry = ladder.get(game.black.id.toString());
+                    }
                 }
 
                 winnerEntry.ladderEntry.points += WIN_POINTS;
@@ -71,10 +53,10 @@ function createLadder(players, rounds) {
 
     ladder.forEach((value, key, map) => {
         for (opponent of value.opponents) {
-            value.ladderEntry.opponentsScore += map.get(opponent).ladderEntry.points;
+            value.ladderEntry.opponentsScore += map.get(opponent.id.toString()).ladderEntry.points;
         }
         for (defeated of value.defeated) {
-            value.ladderEntry.defeatedScore += map.get(defeated).ladderEntry.points;
+            value.ladderEntry.defeatedScore += map.get(defeated.id.toString()).ladderEntry.points;
         }
     });
 
@@ -109,7 +91,7 @@ function createRound(ladder, rounds) {
     const playersNum = players.length;
     const indexes = new Map();
     for (let i = 0; i < playersNum; ++i) {
-        indexes.set(players[i], i);
+        indexes.set(players[i] && players[i].id.toString(), i);
     }
 
     const gamesMatrix = new Array(playersNum);
@@ -119,8 +101,8 @@ function createRound(ladder, rounds) {
     
     for (let games of rounds) {
         for (let game of games) {
-            const black = indexes.get(game.black);
-            const white = indexes.get(game.white);
+            const black = indexes.get(game.black && game.black.id.toString());
+            const white = indexes.get(game.white && game.white.id.toString());
             gamesMatrix[black][white] = 1;
             gamesMatrix[white][black] = 1;
         }
@@ -142,7 +124,12 @@ function createRound(ladder, rounds) {
             throw new Error('Matching players failed');
         }
 
-        games.push(new Game(players[i], players[j]));
+        if (players[i]) {
+            games.push(new Game({ black: players[i], white: players[j] }));
+        }
+        else {
+            games.push(new Game({ black: players[j], white: players[i] }));
+        }
 
         isPaired[i] = true;
         isPaired[j] = true;
@@ -152,7 +139,44 @@ function createRound(ladder, rounds) {
 }
 
 function main() {
-    const players = ['A', 'B', 'C'];
+    const players = [
+        {
+            id: mongoose.Types.ObjectId('5ef7f0d80278e31393b8068a'),
+            name: 'A'
+        },
+        {
+            id: mongoose.Types.ObjectId('5ef7f0d80278e31393b8068b'),
+            name: 'B'
+        },
+        {
+            id: mongoose.Types.ObjectId('5ef7f0d80278e31393b8068c'),
+            name: 'C'
+        },
+        {
+            id: mongoose.Types.ObjectId('5ef7f0d80278e31393b8068d'),
+            name: 'D'
+        },
+        {
+            id: mongoose.Types.ObjectId('5ef7f0d80278e31393b8068e'),
+            name: 'E'
+        },
+        {
+            id: mongoose.Types.ObjectId('5ef7f0d80278e31393b8068f'),
+            name: 'F'
+        },
+        {
+            id: mongoose.Types.ObjectId('5ef7f0d80278e31393b80691'),
+            name: 'G'
+        },
+        {
+            id: mongoose.Types.ObjectId('5ef7f0d80278e31393b80692'),
+            name: 'H'
+        },
+        {
+            id: mongoose.Types.ObjectId('5ef7f0d80278e31393b80693'),
+            name: 'I'
+        }
+    ];
     const numRounds = players.length - 1;
     const rounds = [];
     let ladder = createLadder(players, rounds);
@@ -182,5 +206,6 @@ function main() {
     }
 }
 
-main();
+// main();
 
+module.exports = { createLadder, createRound };

@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const { gameSchema } = require('./game');
+const { ladderEntrySchema } = require('./ladderEntry');
 
 const tournamentSchema = new mongoose.Schema({
     name: String,
@@ -12,13 +14,8 @@ const tournamentSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    games: [{
-        player1: { type: mongoose.Types.ObjectId, ref: 'User' },
-        player2: { type: mongoose.Types.ObjectId, ref: 'User' },
-        winner1: { type: mongoose.Types.ObjectId, ref: 'User' },
-        winner2: { type: mongoose.Types.ObjectId, ref: 'User' },
-        winner: { type: mongoose.Types.ObjectId, ref: 'User' },
-    }],
+    rounds: [ [ gameSchema ] ],
+    ladder: [ ladderEntrySchema ],
     startDate: {
         type: Date,
         validate: {

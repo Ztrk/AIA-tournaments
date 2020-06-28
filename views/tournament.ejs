@@ -30,5 +30,30 @@
   <% if (editAllowed) { %>
     <a href="edit" class="btn btn-primary">Edit</a>
   <% } %>
+
+  <% if (tournament.ladder.length !== 0) { %>
+    <table class="table mt-5">
+      <thead class="thead-light">
+        <tr>
+          <th scope="col">Rank</th>
+          <th scope="col">Player</th>
+          <th scope="col">Points</th>
+          <th scope="col">Opponents points</th>
+          <th scope="col">Defeated points</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% tournament.ladder.forEach(ladderEntry => { %>
+          <tr>
+            <td><%= ladderEntry.position %></td>
+            <td><%= ladderEntry.player.name %></td>
+            <td><%= ladderEntry.points %></td>
+            <td><%= ladderEntry.opponentsScore %></td>
+            <td><%= ladderEntry.defeatedScore %></td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  <% } %>
 </main>
 <%- include('layoutBottom') -%>

@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const Tournament = require('./tournament');
 const User = require('./user');
+const swissTournament = require('./swissTournament');
 const { ensureLoggedIn, fieldFromMongoError } = require('./utils');
 const router = express.Router();
 
@@ -363,5 +364,32 @@ router.post('/tournaments/:id/register', async (req, res) => {
 
     res.redirect(303, '/');
 });
+
+async function startTournaments() {
+    const tournaments = await Tournament.find({
+        startDate: { $lte: new Date(Date.now()) },
+        ladder: { $size: 0 },
+        participants: { $not: { $size: 0 } }
+    }).populate('participants', 'username');
+
+    for (let tournament of tournaments) {
+        try {
+            console.log('Starting tournament ' + tournament.name);
+            const players = tournament.participants.map(value => {
+                return { id: value.id, name: value.username };
+            });
+            const ladder = swissTournament.createLadder(players, []);
+            const round = swissTournament.createRound(ladder, []);
+            tournament.ladder = ladder;
+            tournament.rounds.push(round);
+            await tournament.save({ validateModifiedOnly: true });
+        }
+        catch (error) {
+            console.log(error);
+        }
+    }
+}
+
+setInterval(startTournaments, 1 * 1000);
 
 module.exports = router;
